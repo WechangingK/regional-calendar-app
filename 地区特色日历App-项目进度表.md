@@ -2,7 +2,7 @@
 
 ## 项目概述
 - **项目名称**: 地区特色日历App
-- **技术栈**: Java + Spring Boot + MySQL + Redis + 前端（待定）
+- **技术栈**: Java + Spring Boot + MySQL + Redis + Flutter
 - **GitHub仓库**: git@github.com:WechangingK/regional-calendar-app.git
 
 ---
@@ -32,9 +32,9 @@
 
 ## 第二阶段：技术选型与初始化 ⏳ 待开始
 
-- [ ] **前端技术选型**
-  - 选项: Vue3 / React / 小程序 / Flutter
-  - 待凯哥确认
+- [x] **前端技术选型**
+  - 选择: Flutter
+  - 理由: 跨平台、性能好、安卓基础可快速上手
 
 - [ ] **后端项目初始化**
   - 创建 Spring Boot 项目结构
@@ -204,14 +204,14 @@
 
 ## 当前进度
 
-**总进度**: 15% (5/33 主要任务)
+**总进度**: 18% (6/33 主要任务)
 
-**当前阶段**: 第一阶段 ✅ → 第二阶段 ⏳
+**当前阶段**: 第二阶段 进行中
 
 **下一步**:
-1. 确认前端技术选型
-2. 创建 Spring Boot 后端项目
-3. 初始化数据库
+1. 创建 Spring Boot 后端项目
+2. 初始化数据库
+3. 创建 Flutter 前端项目
 
 ---
 
