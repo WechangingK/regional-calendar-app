@@ -1,0 +1,8 @@
+序号,Skill 名称,功能说明,安装状态
+1,Document-skills,处理 Word、Excel、PowerPoint、PDF 文档，支持文本提取、表格解析、OCR、加密等功能,部分安装（docx/pdf/xlsx）
+2,Frontend Design,生成具有独特视觉风格（如粗野主义、极繁主义等）的前端界面，避免千篇一律,已安装
+3,UI-UX-Pro-Max,提供有据可查的 UI/UX 设计知识库，涵盖配色、字体、图标、UX 规范，跨平台兼容,未安装
+4,Find-skills,作为 Skill 生态内部搜索引擎，根据需求语义匹配并推荐合适的 Skill,未安装
+5,Skill-Creator,用于创建新 Skill，涵盖需求访谈、文档撰写、测试、优化发布全流程,已安装
+6,Superpowers,规范 AI 编程流程，强制经历头脑风暴、设计方案等五阶段，采用测试驱动开发,未安装
+7,PUA,通过四级压力升级系统倒逼 AI 突破瓶颈，融合多家大厂方法论进行调试优化,未安装
