@@ -22,12 +22,17 @@ public interface FestivalService extends IService<Festival> {
     /**
      * 获取热门节日
      */
-    List<Festival> getHot(int limit);
+    List<Festival> getHot(Integer limit, Long regionId);
 
     /**
      * 获取推荐节日
      */
-    List<Festival> getRecommended(int limit);
+    List<Festival> getRecommended(Integer limit, Long regionId);
+
+    /**
+     * 按年月查询节日（日历视图）
+     */
+    List<Festival> getByMonth(int year, int month, Long regionId);
 
     /**
      * 按地区查询节日

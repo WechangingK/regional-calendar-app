@@ -424,13 +424,41 @@
 
 **请求方式**: `GET`
 
-**请求路径**: `/festival/hot`
+**请求路径**: `/v1/festival/hot`
 
 **请求参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |-----|------|-----|------|
 | limit | int | 否 | 返回数量，默认10 |
+| regionId | long | 否 | 地区ID，传入后过滤该地区+全局节日 |
+
+### 3.6 获取推荐节日
+
+**请求方式**: `GET`
+
+**请求路径**: `/v1/festival/recommended`
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| limit | int | 否 | 返回数量，默认10 |
+| regionId | long | 否 | 地区ID，传入后过滤该地区+全局节日 |
+
+### 3.7 日历月视图（节日）
+
+**请求方式**: `GET`
+
+**请求路径**: `/v1/festival/calendar`
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| year | int | 是 | 年份 |
+| month | int | 是 | 月份 |
+| regionId | long | 否 | 地区ID |
 
 ---
 
@@ -576,13 +604,41 @@
 
 **请求方式**: `GET`
 
-**请求路径**: `/activity/hot`
+**请求路径**: `/v1/activity/hot`
 
 **请求参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |-----|------|-----|------|
 | limit | int | 否 | 返回数量，默认10 |
+| regionId | long | 否 | 地区ID，传入后过滤该地区+全局活动 |
+
+### 4.5 获取推荐活动
+
+**请求方式**: `GET`
+
+**请求路径**: `/v1/activity/recommended`
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| limit | int | 否 | 返回数量，默认10 |
+| regionId | long | 否 | 地区ID，传入后过滤该地区+全局活动 |
+
+### 4.6 日历月视图（活动）
+
+**请求方式**: `GET`
+
+**请求路径**: `/v1/activity/calendar`
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| year | int | 是 | 年份 |
+| month | int | 是 | 月份 |
+| regionId | long | 否 | 地区ID |
 
 ---
 
@@ -632,7 +688,21 @@
 
 **请求方式**: `GET`
 
-**请求路径**: `/holiday/{id}`
+**请求路径**: `/v1/holiday/{id}`
+
+### 5.3 日历月视图（放假安排）
+
+**请求方式**: `GET`
+
+**请求路径**: `/v1/holiday/calendar`
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| year | int | 是 | 年份 |
+| month | int | 是 | 月份 |
+| regionId | long | 否 | 地区ID |
 
 ---
 
@@ -642,9 +712,9 @@
 
 **请求方式**: `POST`
 
-**请求路径**: `/user/register`
+**请求路径**: `/v1/user/register`
 
-**请求参数**:
+**请求参数** (JSON Body):
 
 ```json
 {
@@ -653,73 +723,88 @@
     "nickname": "张三",
     "phone": "13800138000",
     "email": "zhangsan@example.com",
-    "smsCode": "123456"
+    "regionId": 110000,
+    "gender": 1
 }
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
 |-----|------|-----|------|
-| username | string | 是 | 用户名（5-50位，字母数字下划线） |
-| password | string | 是 | 密码（6-50位） |
+| username | string | 是 | 用户名（3位以上） |
+| password | string | 是 | 密码（6位以上） |
 | nickname | string | 否 | 昵称 |
 | phone | string | 否 | 手机号 |
 | email | string | 否 | 邮箱 |
-| smsCode | string | 条件 | 手机注册时必填 |
+| regionId | long | 否 | 默认地区ID |
+| gender | int | 否 | 性别：0=未知, 1=男, 2=女 |
 
 **响应示例**:
 
 ```json
 {
     "code": 200,
+    "message": "操作成功",
     "data": {
         "id": 1,
         "username": "zhangsan",
         "nickname": "张三",
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "tokenExpire": 1704153600000
+        "phone": "13800138000",
+        "email": "zhangsan@example.com",
+        "gender": 1,
+        "regionId": 110000,
+        "status": 1
     }
 }
 ```
+
+**说明**: 注册成功后返回用户信息（不含密码），需自行跳转登录页。
 
 ### 6.2 用户登录
 
 **请求方式**: `POST`
 
-**请求路径**: `/user/login`
+**请求路径**: `/v1/user/login`
 
-**请求参数**:
+**请求参数** (Form-encoded 或 JSON):
 
 ```json
 {
     "username": "zhangsan",
-    "password": "123456",
-    "deviceId": "device_123"
+    "password": "123456"
 }
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
 |-----|------|-----|------|
-| username | string | 是 | 用户名/手机号/邮箱 |
+| username | string | 是 | 用户名 |
 | password | string | 是 | 密码 |
-| deviceId | string | 否 | 设备ID（用于推送） |
 
 **响应示例**:
 
 ```json
 {
     "code": 200,
+    "message": "操作成功",
     "data": {
-        "id": 1,
-        "username": "zhangsan",
-        "nickname": "张三",
-        "avatar": "/images/avatars/1.jpg",
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "tokenExpire": 1704153600000,
-        "vipLevel": 0,
-        "regionId": 1,
-        "regionName": "北京市"
+        "user": {
+            "id": 1,
+            "username": "zhangsan",
+            "nickname": "张三",
+            "avatar": null,
+            "phone": "13800138000",
+            "email": "zhangsan@example.com",
+            "gender": 1,
+            "regionId": 110000,
+            "vipLevel": 0,
+            "points": 100,
+            "lastLoginTime": "2026-05-11T10:30:00"
+        }
     }
 }
+```
+
+**说明**: 登录成功后返回 JWT token 和用户完整信息。前端应将 token 存入 LocalStorage，后续请求通过 Bearer Token 携带。
 ```
 
 ### 6.3 第三方登录

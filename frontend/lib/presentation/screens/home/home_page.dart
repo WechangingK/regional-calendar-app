@@ -7,8 +7,10 @@ import '../../../data/providers/region_provider.dart';
 import '../../../data/providers/festival_provider.dart';
 import '../../../data/providers/activity_provider.dart';
 import '../../../data/providers/content_provider.dart';
+import '../../../data/providers/holiday_provider.dart';
 import '../../../data/models/festival.dart';
 import '../../../data/models/activity.dart';
+import '../../../data/models/holiday_schedule.dart';
 
 class HomePage extends ConsumerStatefulWidget {
 	const HomePage({super.key});
@@ -20,6 +22,51 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
 	DateTime _focusedDay = DateTime.now();
 	DateTime? _selectedDay;
+	Map<DateTime, List<dynamic>> _markers = {};
+
+	void _buildMarkers(
+		List<Festival>? festivals,
+		List<Activity>? activities,
+		List<HolidaySchedule>? holidays,
+	) {
+		final map = <DateTime, List<dynamic>>{};
+
+		if (festivals != null) {
+			for (final f in festivals) {
+				if (f.startDate == null) continue;
+				final d = DateTime.tryParse(f.startDate!);
+				if (d != null) {
+					map.putIfAbsent(d, () => []).add(f);
+				}
+			}
+		}
+
+		if (activities != null) {
+			for (final a in activities) {
+				if (a.startTime == null) continue;
+				final d = DateTime.tryParse(a.startTime!);
+				if (d != null) {
+					map.putIfAbsent(d, () => []).add(a);
+				}
+			}
+		}
+
+		if (holidays != null) {
+			for (final h in holidays) {
+				final start = DateTime.tryParse(h.startDate);
+				final end = DateTime.tryParse(h.endDate);
+				if (start != null && end != null) {
+					var d = start;
+					while (!d.isAfter(end)) {
+						map.putIfAbsent(d, () => []).add(h);
+						d = d.add(const Duration(days: 1));
+					}
+				}
+			}
+		}
+
+		_markers = map;
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -27,6 +74,24 @@ class _HomePageState extends ConsumerState<HomePage> {
 		final upcomingFestivals = ref.watch(upcomingFestivalsProvider);
 		final upcomingActivities = ref.watch(upcomingActivitiesProvider);
 		final dailyContent = ref.watch(dailyContentProvider);
+		final holidaySchedule = ref.watch(holidayScheduleProvider);
+		final monthFestivals = ref.watch(calendarFestivalsProvider(
+			(year: _focusedDay.year, month: _focusedDay.month),
+		));
+		final monthActivities = ref.watch(calendarActivitiesProvider(
+			(year: _focusedDay.year, month: _focusedDay.month),
+		));
+		final monthHolidays = ref.watch(calendarHolidaysProvider(
+			(year: _focusedDay.year, month: _focusedDay.month),
+		));
+
+		monthFestivals.whenData((festivals) {
+			monthActivities.whenData((activities) {
+				monthHolidays.whenData((holidays) {
+					_buildMarkers(festivals, activities, holidays);
+				});
+			});
+		});
 
 		return Scaffold(
 			appBar: AppBar(
@@ -45,17 +110,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 			body: SingleChildScrollView(
 				child: Column(
 					children: [
-						// 日历组件
 						_buildCalendar(),
-						// 今日信息
 						_buildTodayInfo(),
-						// 快捷入口
 						_buildQuickActions(),
-						// 近期节日
 						_buildUpcomingFestivals(upcomingFestivals),
-						// 近期活动
 						_buildUpcomingActivities(upcomingActivities),
-						// 每日文化
+						_buildHolidaySchedule(holidaySchedule),
 						_buildDailyContent(dailyContent),
 					],
 				),
@@ -78,7 +138,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 						_focusedDay = focusedDay;
 					});
 				},
+				onPageChanged: (focusedDay) {
+					setState(() {
+						_focusedDay = focusedDay;
+					});
+				},
 				calendarFormat: CalendarFormat.month,
+				eventLoader: (day) => _markers[DateTime.utc(day.year, day.month, day.day)] ?? [],
 				startingDayOfWeek: StartingDayOfWeek.sunday,
 				headerStyle: HeaderStyle(
 					formatButtonVisible: false,
@@ -90,16 +156,21 @@ class _HomePageState extends ConsumerState<HomePage> {
 					leftChevronIcon: const Icon(Icons.chevron_left, color: AppColors.primary),
 					rightChevronIcon: const Icon(Icons.chevron_right, color: AppColors.primary),
 				),
-				calendarStyle: const CalendarStyle(
-					todayDecoration: BoxDecoration(
+				calendarStyle: CalendarStyle(
+					todayDecoration: const BoxDecoration(
 						color: AppColors.calendarToday,
 						shape: BoxShape.circle,
 					),
-					selectedDecoration: BoxDecoration(
+					selectedDecoration: const BoxDecoration(
 						color: AppColors.calendarSelected,
 						shape: BoxShape.circle,
 					),
 					outsideDaysVisible: false,
+					markerDecoration: const BoxDecoration(
+						color: AppColors.festivalEthnic,
+						shape: BoxShape.circle,
+					),
+					markersMaxCount: 3,
 				),
 				daysOfWeekStyle: const DaysOfWeekStyle(
 					weekendStyle: TextStyle(color: AppColors.calendarWeekend),
@@ -134,7 +205,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 								),
 								const SizedBox(height: 4),
 								const Text(
-									'农历信息加载中...',
+									'点击日历查看节日详情',
 									style: TextStyle(
 										color: Colors.white70,
 										fontSize: 14,
@@ -320,6 +391,52 @@ class _HomePageState extends ConsumerState<HomePage> {
 		);
 	}
 
+	Widget _buildHolidaySchedule(AsyncValue<List<HolidaySchedule>> holidaySchedule) {
+		return Container(
+			margin: const EdgeInsets.all(12),
+			child: Column(
+				crossAxisAlignment: CrossAxisAlignment.start,
+				children: [
+					_buildSectionHeader(
+						icon: Icons.beach_access,
+						title: '放假安排',
+						onMore: () => context.go('/calendar'),
+					),
+					const SizedBox(height: 12),
+					holidaySchedule.when(
+						data: (holidays) {
+							if (holidays.isEmpty) {
+								return const Center(
+									child: Padding(
+										padding: EdgeInsets.all(20),
+										child: Text('暂无放假安排'),
+									),
+								);
+							}
+							return Column(
+								children: holidays.take(3).map((h) {
+									return _buildHolidayCard(h);
+								}).toList(),
+							);
+						},
+						loading: () => const Center(
+							child: Padding(
+								padding: EdgeInsets.all(20),
+								child: CircularProgressIndicator(),
+							),
+						),
+						error: (error, _) => Center(
+							child: Padding(
+								padding: const EdgeInsets.all(20),
+								child: Text('加载失败：$error'),
+							),
+						),
+					),
+				],
+			),
+		);
+	}
+
 	Widget _buildDailyContent(AsyncValue<dynamic> dailyContent) {
 		return Container(
 			margin: const EdgeInsets.all(12),
@@ -463,7 +580,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 					child: Column(
 						crossAxisAlignment: CrossAxisAlignment.start,
 						children: [
-							// 图片
 							ClipRRect(
 								borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
 								child: activity.imageUrl != null
@@ -476,7 +592,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 									)
 									: _buildActivityPlaceholder(),
 							),
-							// 信息
 							Padding(
 								padding: const EdgeInsets.all(8),
 								child: Column(
@@ -504,6 +619,49 @@ class _HomePageState extends ConsumerState<HomePage> {
 								),
 							),
 						],
+					),
+				),
+			),
+		);
+	}
+
+	Widget _buildHolidayCard(HolidaySchedule holiday) {
+		return Card(
+			margin: const EdgeInsets.only(bottom: 8),
+			child: ListTile(
+				leading: Container(
+					width: 48,
+					height: 48,
+					decoration: BoxDecoration(
+						color: AppColors.gold.withValues(alpha: 0.1),
+						borderRadius: BorderRadius.circular(8),
+					),
+					child: const Icon(
+						Icons.beach_access,
+						color: AppColors.gold,
+					),
+				),
+				title: Text(
+					holiday.festivalName ?? '节假日',
+					style: const TextStyle(fontWeight: FontWeight.w600),
+				),
+				subtitle: Text(
+					'${holiday.startDate} ~ ${holiday.endDate}',
+					style: const TextStyle(fontSize: 12),
+				),
+				trailing: Container(
+					padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+					decoration: BoxDecoration(
+						color: AppColors.gold.withValues(alpha: 0.1),
+						borderRadius: BorderRadius.circular(4),
+					),
+					child: Text(
+						'${holiday.totalDays}天',
+						style: const TextStyle(
+							color: AppColors.gold,
+							fontSize: 12,
+							fontWeight: FontWeight.bold,
+						),
 					),
 				),
 			),

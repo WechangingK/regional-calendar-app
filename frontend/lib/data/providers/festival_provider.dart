@@ -15,7 +15,8 @@ final upcomingFestivalsProvider = FutureProvider<List<Festival>>((ref) async {
 // 热门节日
 final hotFestivalsProvider = FutureProvider<List<Festival>>((ref) async {
 	final repo = ref.read(festivalRepositoryProvider);
-	return repo.getHotFestivals();
+	final region = ref.watch(currentRegionProvider);
+	return repo.getHotFestivals(regionId: region?.id);
 });
 
 // 推荐节日
@@ -23,4 +24,15 @@ final recommendFestivalsProvider = FutureProvider<List<Festival>>((ref) async {
 	final repo = ref.read(festivalRepositoryProvider);
 	final region = ref.watch(currentRegionProvider);
 	return repo.getRecommendFestivals(regionId: region?.id);
+});
+
+// 日历月视图节日
+final calendarFestivalsProvider = FutureProvider.family<List<Festival>, ({int year, int month})>((ref, params) async {
+	final repo = ref.read(festivalRepositoryProvider);
+	final region = ref.watch(currentRegionProvider);
+	return repo.getFestivalsByMonth(
+		year: params.year,
+		month: params.month,
+		regionId: region?.id,
+	);
 });

@@ -6,20 +6,25 @@ import '../models/user.dart';
 class UserRepository {
 	final _dio = DioClient.instance.dio;
 
-	// 注册
 	Future<bool> register({
 		required String username,
 		required String password,
 		String? nickname,
 		String? phone,
+		String? email,
+		int? regionId,
+		int? gender,
 	}) async {
 		final response = await _dio.post(
 			'/v1/user/register',
 			data: {
 				'username': username,
 				'password': password,
-				if (nickname != null) 'nickname': nickname,
-				if (phone != null) 'phone': phone,
+				if (nickname != null && nickname.isNotEmpty) 'nickname': nickname,
+				if (phone != null && phone.isNotEmpty) 'phone': phone,
+				if (email != null && email.isNotEmpty) 'email': email,
+				if (regionId != null) 'regionId': regionId,
+				if (gender != null) 'gender': gender,
 			},
 		);
 		final apiResponse = ApiResponse.fromJson(
@@ -29,7 +34,6 @@ class UserRepository {
 		return apiResponse.isSuccess;
 	}
 
-	// 登录
 	Future<User?> login({
 		required String username,
 		required String password,
@@ -59,7 +63,6 @@ class UserRepository {
 		return null;
 	}
 
-	// 获取用户信息
 	Future<User?> getProfile() async {
 		final response = await _dio.get('/v1/user/profile');
 		final apiResponse = ApiResponse.fromJson(
@@ -69,7 +72,6 @@ class UserRepository {
 		return apiResponse.data;
 	}
 
-	// 退出登录
 	Future<void> logout() async {
 		await LocalStorage.clearAll();
 	}

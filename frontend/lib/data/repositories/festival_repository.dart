@@ -36,10 +36,13 @@ class FestivalRepository {
 	}
 
 	// 获取热门节日
-	Future<List<Festival>> getHotFestivals({int size = 10}) async {
+	Future<List<Festival>> getHotFestivals({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/festival/hot',
-			queryParameters: {'limit': size},
+			queryParameters: {
+				'limit': size,
+				if (regionId != null) 'regionId': regionId,
+			},
 		);
 		return _parseDataList(response.data);
 	}
@@ -48,7 +51,27 @@ class FestivalRepository {
 	Future<List<Festival>> getRecommendFestivals({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/festival/recommended',
-			queryParameters: {'limit': size},
+			queryParameters: {
+				'limit': size,
+				if (regionId != null) 'regionId': regionId,
+			},
+		);
+		return _parseDataList(response.data);
+	}
+
+	// 按月查询节日（日历视图）
+	Future<List<Festival>> getFestivalsByMonth({
+		required int year,
+		required int month,
+		int? regionId,
+	}) async {
+		final response = await _dio.get(
+			'/v1/festival/calendar',
+			queryParameters: {
+				'year': year,
+				'month': month,
+				if (regionId != null) 'regionId': regionId,
+			},
 		);
 		return _parseDataList(response.data);
 	}

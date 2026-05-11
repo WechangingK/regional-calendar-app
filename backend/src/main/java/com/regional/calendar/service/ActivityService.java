@@ -22,12 +22,17 @@ public interface ActivityService extends IService<Activity> {
     /**
      * 获取热门活动
      */
-    List<Activity> getHot(int limit);
+    List<Activity> getHot(int limit, Long regionId);
 
     /**
      * 获取推荐活动
      */
-    List<Activity> getRecommended(int limit);
+    List<Activity> getRecommended(int limit, Long regionId);
+
+    /**
+     * 按年月查询活动（日历视图）
+     */
+    List<Activity> getByMonth(int year, int month, Long regionId);
 
     /**
      * 按节日查询关联活动

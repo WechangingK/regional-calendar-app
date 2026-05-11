@@ -15,23 +15,32 @@ import java.util.List;
 @RequestMapping("/v1/holiday")
 public class HolidayScheduleController {
 
-    private final HolidayScheduleService holidayScheduleService;
+	private final HolidayScheduleService holidayScheduleService;
 
-    public HolidayScheduleController(HolidayScheduleService holidayScheduleService) {
-        this.holidayScheduleService = holidayScheduleService;
-    }
+	public HolidayScheduleController(HolidayScheduleService holidayScheduleService) {
+		this.holidayScheduleService = holidayScheduleService;
+	}
 
-    @Operation(summary = "获取放假安排")
-    @GetMapping("/list")
-    public R<List<HolidaySchedule>> list(
-            @Parameter(description = "年份") @RequestParam(required = false) Integer year,
-            @Parameter(description = "地区ID") @RequestParam(required = false) Long regionId) {
-        if (year == null) {
-            year = java.time.LocalDate.now().getYear();
-        }
-        if (regionId != null) {
-            return R.ok(holidayScheduleService.getByYearAndRegion(year, regionId));
-        }
-        return R.ok(holidayScheduleService.getByYear(year));
-    }
+	@Operation(summary = "获取放假安排")
+	@GetMapping("/list")
+	public R<List<HolidaySchedule>> list(
+			@Parameter(description = "年份") @RequestParam(required = false) Integer year,
+			@Parameter(description = "地区ID") @RequestParam(required = false) Long regionId) {
+		if (year == null) {
+			year = java.time.LocalDate.now().getYear();
+		}
+		if (regionId != null) {
+			return R.ok(holidayScheduleService.getByYearAndRegion(year, regionId));
+		}
+		return R.ok(holidayScheduleService.getByYear(year));
+	}
+
+	@Operation(summary = "按年月查询放假安排（日历视图）")
+	@GetMapping("/calendar")
+	public R<List<HolidaySchedule>> calendar(
+			@Parameter(description = "年份") @RequestParam int year,
+			@Parameter(description = "月份") @RequestParam int month,
+			@Parameter(description = "地区ID") @RequestParam(required = false) Long regionId) {
+		return R.ok(holidayScheduleService.getByMonth(year, month, regionId));
+	}
 }

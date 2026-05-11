@@ -36,10 +36,13 @@ class ActivityRepository {
 	}
 
 	// 获取热门活动
-	Future<List<Activity>> getHotActivities({int size = 10}) async {
+	Future<List<Activity>> getHotActivities({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/activity/hot',
-			queryParameters: {'limit': size},
+			queryParameters: {
+				'limit': size,
+				if (regionId != null) 'regionId': regionId,
+			},
 		);
 		return _parseDataList(response.data);
 	}
@@ -48,7 +51,27 @@ class ActivityRepository {
 	Future<List<Activity>> getRecommendActivities({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/activity/recommended',
-			queryParameters: {'limit': size},
+			queryParameters: {
+				'limit': size,
+				if (regionId != null) 'regionId': regionId,
+			},
+		);
+		return _parseDataList(response.data);
+	}
+
+	// 按月查询活动（日历视图）
+	Future<List<Activity>> getActivitiesByMonth({
+		required int year,
+		required int month,
+		int? regionId,
+	}) async {
+		final response = await _dio.get(
+			'/v1/activity/calendar',
+			queryParameters: {
+				'year': year,
+				'month': month,
+				if (regionId != null) 'regionId': regionId,
+			},
 		);
 		return _parseDataList(response.data);
 	}

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/constants/app_colors.dart';
 import '../../../data/providers/user_provider.dart';
-import '../../../data/repositories/user_repository.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
 	const LoginPage({super.key});
@@ -18,9 +17,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 	final _passwordController = TextEditingController();
 	final _nicknameController = TextEditingController();
 	final _phoneController = TextEditingController();
+	final _emailController = TextEditingController();
 	bool _isLogin = true;
 	bool _isLoading = false;
 	bool _obscurePassword = true;
+	int _selectedGender = 0; // 0=未知, 1=男, 2=女
 
 	@override
 	void dispose() {
@@ -28,6 +29,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 		_passwordController.dispose();
 		_nicknameController.dispose();
 		_phoneController.dispose();
+		_emailController.dispose();
 		super.dispose();
 	}
 
@@ -45,7 +47,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 					child: Column(
 						children: [
 							const SizedBox(height: 40),
-							// Logo
 							Container(
 								width: 100,
 								height: 100,
@@ -78,97 +79,65 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 							),
 							const SizedBox(height: 40),
 							// 用户名
-							TextFormField(
+							_buildTextField(
 								controller: _usernameController,
-								decoration: InputDecoration(
-									labelText: '用户名',
-									hintText: '请输入用户名',
-									prefixIcon: const Icon(Icons.person_outline),
-									border: OutlineInputBorder(
-										borderRadius: BorderRadius.circular(12),
-									),
-									filled: true,
-									fillColor: Colors.grey[50],
-								),
-								validator: (value) {
-									if (value == null || value.isEmpty) {
-										return '请输入用户名';
-									}
-									if (value.length < 3) {
-										return '用户名至少3个字符';
-									}
+								label: '用户名',
+								hint: '请输入用户名',
+								icon: Icons.person_outline,
+								validator: (v) {
+									if (v == null || v.isEmpty) return '请输入用户名';
+									if (v.length < 3) return '用户名至少3个字符';
 									return null;
 								},
 							),
 							const SizedBox(height: 16),
 							// 密码
-							TextFormField(
+							_buildTextField(
 								controller: _passwordController,
-								obscureText: _obscurePassword,
-								decoration: InputDecoration(
-									labelText: '密码',
-									hintText: '请输入密码',
-									prefixIcon: const Icon(Icons.lock_outline),
-									suffixIcon: IconButton(
-										icon: Icon(
-											_obscurePassword ? Icons.visibility_off : Icons.visibility,
-										),
-										onPressed: () {
-											setState(() {
-												_obscurePassword = !_obscurePassword;
-											});
-										},
-									),
-									border: OutlineInputBorder(
-										borderRadius: BorderRadius.circular(12),
-									),
-									filled: true,
-									fillColor: Colors.grey[50],
+								label: '密码',
+								hint: '请输入密码',
+								icon: Icons.lock_outline,
+								obscure: _obscurePassword,
+								suffix: IconButton(
+									icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+									onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
 								),
-								validator: (value) {
-									if (value == null || value.isEmpty) {
-										return '请输入密码';
-									}
-									if (value.length < 6) {
-										return '密码至少6位';
-									}
+								validator: (v) {
+									if (v == null || v.isEmpty) return '请输入密码';
+									if (v.length < 6) return '密码至少6位';
 									return null;
 								},
 							),
 							// 注册额外字段
 							if (!_isLogin) ...[
 								const SizedBox(height: 16),
-								TextFormField(
+								_buildTextField(
 									controller: _nicknameController,
-									decoration: InputDecoration(
-										labelText: '昵称',
-										hintText: '请输入昵称（选填）',
-										prefixIcon: const Icon(Icons.badge_outlined),
-										border: OutlineInputBorder(
-											borderRadius: BorderRadius.circular(12),
-										),
-										filled: true,
-										fillColor: Colors.grey[50],
-									),
+									label: '昵称',
+									hint: '请输入昵称（选填）',
+									icon: Icons.badge_outlined,
 								),
 								const SizedBox(height: 16),
-								TextFormField(
+								_buildTextField(
 									controller: _phoneController,
+									label: '手机号',
+									hint: '请输入手机号（选填）',
+									icon: Icons.phone_outlined,
 									keyboardType: TextInputType.phone,
-									decoration: InputDecoration(
-										labelText: '手机号',
-										hintText: '请输入手机号（选填）',
-										prefixIcon: const Icon(Icons.phone_outlined),
-										border: OutlineInputBorder(
-											borderRadius: BorderRadius.circular(12),
-										),
-										filled: true,
-										fillColor: Colors.grey[50],
-									),
 								),
+								const SizedBox(height: 16),
+								_buildTextField(
+									controller: _emailController,
+									label: '邮箱',
+									hint: '请输入邮箱（选填）',
+									icon: Icons.email_outlined,
+									keyboardType: TextInputType.emailAddress,
+								),
+								const SizedBox(height: 16),
+								// 性别选择
+								_buildGenderSelector(),
 							],
 							const SizedBox(height: 24),
-							// 登录/注册按钮
 							SizedBox(
 								width: double.infinity,
 								height: 50,
@@ -197,7 +166,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 								),
 							),
 							const SizedBox(height: 16),
-							// 切换登录/注册
 							Row(
 								mainAxisAlignment: MainAxisAlignment.center,
 								children: [
@@ -225,6 +193,72 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 					),
 				),
 			),
+		);
+	}
+
+	Widget _buildTextField({
+		required TextEditingController controller,
+		required String label,
+		required String hint,
+		required IconData icon,
+		bool obscure = false,
+		Widget? suffix,
+		TextInputType? keyboardType,
+		String? Function(String?)? validator,
+	}) {
+		return TextFormField(
+			controller: controller,
+			obscureText: obscure,
+			keyboardType: keyboardType,
+			decoration: InputDecoration(
+				labelText: label,
+				hintText: hint,
+				prefixIcon: Icon(icon),
+				suffixIcon: suffix,
+				border: OutlineInputBorder(
+					borderRadius: BorderRadius.circular(12),
+				),
+				filled: true,
+				fillColor: Colors.grey[50],
+			),
+			validator: validator,
+		);
+	}
+
+	Widget _buildGenderSelector() {
+		return InputDecorator(
+			decoration: InputDecoration(
+				labelText: '性别',
+				border: OutlineInputBorder(
+					borderRadius: BorderRadius.circular(12),
+				),
+				filled: true,
+				fillColor: Colors.grey[50],
+			),
+			child: Row(
+				children: [
+					_buildGenderOption(0, '保密'),
+					const SizedBox(width: 24),
+					_buildGenderOption(1, '男'),
+					const SizedBox(width: 24),
+					_buildGenderOption(2, '女'),
+				],
+			),
+		);
+	}
+
+	Widget _buildGenderOption(int value, String label) {
+		return Row(
+			mainAxisSize: MainAxisSize.min,
+			children: [
+				Radio<int>(
+					value: value,
+					groupValue: _selectedGender,
+					activeColor: AppColors.primary,
+					onChanged: (v) => setState(() => _selectedGender = v!),
+				),
+				Text(label),
+			],
 		);
 	}
 
@@ -266,6 +300,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 					phone: _phoneController.text.trim().isNotEmpty
 						? _phoneController.text.trim()
 						: null,
+					email: _emailController.text.trim().isNotEmpty
+						? _emailController.text.trim()
+						: null,
+					gender: _selectedGender > 0 ? _selectedGender : null,
 				);
 				if (success && mounted) {
 					ScaffoldMessenger.of(context).showSnackBar(
@@ -278,6 +316,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 						_isLogin = true;
 						_nicknameController.clear();
 						_phoneController.clear();
+						_emailController.clear();
+						_selectedGender = 0;
 					});
 				} else if (mounted) {
 					ScaffoldMessenger.of(context).showSnackBar(

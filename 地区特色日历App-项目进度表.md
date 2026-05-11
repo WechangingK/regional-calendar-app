@@ -149,12 +149,28 @@
 
 ### 5.1 联调测试 ✅ 已完成
 - [x] **前后端联调** — 后端API + Flutter Web联调
-- [x] **Bug修复** — 修复联调发现的三个问题
+- [x] **Bug修复（第一轮）** — 修复联调发现的三个问题
   - 数据获取：修复分页响应解析（IPage格式）
   - 登录注册：分离界面，完善功能
   - 我的页面：所有菜单项添加功能实现
 
-### 5.2 待完成
+### 5.2 Bug修复（第二轮） ✅ 已完成 (2026-05-11)
+- [x] **Bug 1: 注册功能增强**
+  - 后端：创建 RegisterRequest DTO，注册支持 username/password/nickname/phone/email/gender/regionId
+  - 后端：登录接口返回 token + 用户信息（user字段）
+  - 前端：注册页添加邮箱、性别选择字段
+  - 前端：User 模型扩展（gender、regionName、birthday、bio、vipLevel、points）
+- [x] **Bug 2: 区域切换过滤**
+  - 后端：热门/推荐节日和活动接口添加 regionId 过滤参数
+  - 前端：hot/recommended Provider 传递当前地区 ID
+  - 前端：添加 HolidayRepository + holidayProvider，首页展示放假安排
+- [x] **Bug 3: 日历显示节日活动**
+  - 后端：添加 /v1/festival/calendar、/v1/activity/calendar、/v1/holiday/calendar 按月查询接口
+  - 前端：CalendarPage 使用 eventLoader 在日历上标记节日/活动/放假
+  - 前端：HomePage 日历也显示标记点
+  - 前端：点击日期显示当天实际节日、活动列表（非占位文本）
+
+### 5.3 待完成
 - [ ] 单元测试
 - [ ] 集成测试
 - [ ] 性能优化
@@ -183,10 +199,10 @@
 
 | 类别 | 数量 | 说明 |
 |------|------|------|
-| 后端 Java 文件 | 78个 | +2 (地区导入相关) |
-| 前端 Dart 文件 | ~30个 | 11个页面 |
+| 后端 Java 文件 | 80个 | +4 (RegisterRequest DTO + 服务扩展) |
+| 前端 Dart 文件 | ~35个 | +2 (HolidayRepository, holidayProvider) |
 | 数据库表 | 12张 | - |
-| API 接口 | 49个 | +4 (地区导入接口) |
+| API 接口 | 52个 | +3 (日历月视图接口) |
 | 已实现页面 | 11个 | 首页、日历、节日/活动/内容列表+详情、个人中心、登录、地区选择 |
 | 地区数据 | 590条 | 250国家 + 34省 + 306城市 |
 | 其他数据 | 21条 | 8活动 + 7内容 + 6放假安排 |
@@ -206,6 +222,6 @@
 
 ---
 
-**文档版本**: v5.0
+**文档版本**: v5.1
 **更新时间**: 2026-05-11
 **维护人**: 开发团队
