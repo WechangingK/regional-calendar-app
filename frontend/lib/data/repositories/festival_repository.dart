@@ -13,19 +13,20 @@ class FestivalRepository {
 		int size = 20,
 	}) async {
 		final response = await _dio.get(
-			'/v1/festival',
+			'/v1/festival/list',
 			queryParameters: {
 				if (regionId != null) 'regionId': regionId,
 				if (type != null) 'type': type,
 				'page': page,
-				'size': size,
+				'pageSize': size,
 			},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Festival.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		// 分页接口返回的是 IPage，需要从 records 字段获取列表
+		final data = response.data['data'];
+		if (data != null && data['records'] != null) {
+			return (data['records'] as List).map((e) => Festival.fromJson(e)).toList();
+		}
+		return [];
 	}
 
 	// 获取即将到来的节日
@@ -34,7 +35,7 @@ class FestivalRepository {
 			'/v1/festival/upcoming',
 			queryParameters: {
 				if (regionId != null) 'regionId': regionId,
-				'size': size,
+				'limit': size,
 			},
 		);
 		final apiResponse = ApiResponse.fromJson(
@@ -48,7 +49,7 @@ class FestivalRepository {
 	Future<List<Festival>> getHotFestivals({int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/festival/hot',
-			queryParameters: {'size': size},
+			queryParameters: {'limit': size},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
@@ -60,11 +61,8 @@ class FestivalRepository {
 	// 获取推荐节日
 	Future<List<Festival>> getRecommendFestivals({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
-			'/v1/festival/recommend',
-			queryParameters: {
-				if (regionId != null) 'regionId': regionId,
-				'size': size,
-			},
+			'/v1/festival/recommended',
+			queryParameters: {'limit': size},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
@@ -84,13 +82,10 @@ class FestivalRepository {
 	}
 
 	// 搜索节日
-	Future<List<Festival>> searchFestivals(String keyword, {int? regionId}) async {
+	Future<List<Festival>> searchFestivals(String keyword) async {
 		final response = await _dio.get(
 			'/v1/festival/search',
-			queryParameters: {
-				'keyword': keyword,
-				if (regionId != null) 'regionId': regionId,
-			},
+			queryParameters: {'keyword': keyword},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,

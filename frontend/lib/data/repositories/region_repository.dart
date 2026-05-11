@@ -8,7 +8,7 @@ class RegionRepository {
 	// 获取省份列表
 	Future<List<Region>> getProvinces() async {
 		final response = await _dio.get(
-			'/v1/region/provinces',
+			'/v1/region/list',
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
@@ -20,7 +20,7 @@ class RegionRepository {
 	// 获取子地区
 	Future<List<Region>> getChildren(int parentId) async {
 		final response = await _dio.get(
-			'/v1/region/children',
+			'/v1/region/list',
 			queryParameters: {'parentId': parentId},
 		);
 		final apiResponse = ApiResponse.fromJson(
@@ -33,7 +33,7 @@ class RegionRepository {
 	// 搜索地区
 	Future<List<Region>> searchRegions(String keyword) async {
 		final response = await _dio.get(
-			'/v1/region/search',
+			'/v1/region/list',
 			queryParameters: {'keyword': keyword},
 		);
 		final apiResponse = ApiResponse.fromJson(
@@ -47,7 +47,7 @@ class RegionRepository {
 	Future<List<Region>> getHotRegions({int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/region/hot',
-			queryParameters: {'size': size},
+			queryParameters: {'limit': size},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,

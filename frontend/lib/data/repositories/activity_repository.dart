@@ -8,24 +8,24 @@ class ActivityRepository {
 	// 获取活动列表
 	Future<List<Activity>> getActivities({
 		int? regionId,
-		int? festivalId,
+		int? type,
 		int page = 1,
 		int size = 20,
 	}) async {
 		final response = await _dio.get(
-			'/v1/activity',
+			'/v1/activity/list',
 			queryParameters: {
 				if (regionId != null) 'regionId': regionId,
-				if (festivalId != null) 'festivalId': festivalId,
+				if (type != null) 'type': type,
 				'page': page,
-				'size': size,
+				'pageSize': size,
 			},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		final data = response.data['data'];
+		if (data != null && data['records'] != null) {
+			return (data['records'] as List).map((e) => Activity.fromJson(e)).toList();
+		}
+		return [];
 	}
 
 	// 获取即将到来的活动
@@ -34,7 +34,7 @@ class ActivityRepository {
 			'/v1/activity/upcoming',
 			queryParameters: {
 				if (regionId != null) 'regionId': regionId,
-				'size': size,
+				'limit': size,
 			},
 		);
 		final apiResponse = ApiResponse.fromJson(
@@ -48,7 +48,7 @@ class ActivityRepository {
 	Future<List<Activity>> getHotActivities({int size = 10}) async {
 		final response = await _dio.get(
 			'/v1/activity/hot',
-			queryParameters: {'size': size},
+			queryParameters: {'limit': size},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
@@ -60,11 +60,8 @@ class ActivityRepository {
 	// 获取推荐活动
 	Future<List<Activity>> getRecommendActivities({int? regionId, int size = 10}) async {
 		final response = await _dio.get(
-			'/v1/activity/recommend',
-			queryParameters: {
-				if (regionId != null) 'regionId': regionId,
-				'size': size,
-			},
+			'/v1/activity/recommended',
+			queryParameters: {'limit': size},
 		);
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
@@ -85,10 +82,7 @@ class ActivityRepository {
 
 	// 按节日获取活动
 	Future<List<Activity>> getActivitiesByFestival(int festivalId) async {
-		final response = await _dio.get(
-			'/v1/activity/by-festival',
-			queryParameters: {'festivalId': festivalId},
-		);
+		final response = await _dio.get('/v1/activity/festival/$festivalId');
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
 			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),

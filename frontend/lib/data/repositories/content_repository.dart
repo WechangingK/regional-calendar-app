@@ -13,19 +13,19 @@ class ContentRepository {
 		int size = 20,
 	}) async {
 		final response = await _dio.get(
-			'/v1/content',
+			'/v1/content/list',
 			queryParameters: {
 				if (regionId != null) 'regionId': regionId,
 				if (type != null) 'type': type,
 				'page': page,
-				'size': size,
+				'pageSize': size,
 			},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Content.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		final data = response.data['data'];
+		if (data != null && data['records'] != null) {
+			return (data['records'] as List).map((e) => Content.fromJson(e)).toList();
+		}
+		return [];
 	}
 
 	// 获取每日推荐内容
@@ -33,7 +33,7 @@ class ContentRepository {
 		final response = await _dio.get('/v1/content/daily');
 		final apiResponse = ApiResponse.fromJson(
 			response.data,
-			(json) => Content.fromJson(json as Map<String, dynamic>),
+			(json) => json != null ? Content.fromJson(json as Map<String, dynamic>) : null,
 		);
 		return apiResponse.data;
 	}
