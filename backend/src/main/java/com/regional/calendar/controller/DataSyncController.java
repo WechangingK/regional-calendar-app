@@ -1,6 +1,7 @@
 package com.regional.calendar.controller;
 
 import com.regional.calendar.common.result.R;
+import com.regional.calendar.service.holiday.HolidaySyncService;
 import com.regional.calendar.service.region.RegionImportService;
 import com.regional.calendar.service.region.RegionImportService.ImportResult;
 import com.regional.calendar.service.wikidata.FestivalSyncService;
@@ -26,6 +27,7 @@ public class DataSyncController {
     private final FestivalSyncService festivalSyncService;
     private final WikidataService wikidataService;
     private final RegionImportService regionImportService;
+    private final HolidaySyncService holidaySyncService;
 
     // ==================== 地区数据导入 ====================
 
@@ -86,6 +88,20 @@ public class DataSyncController {
     }
 
     // ==================== 节日数据同步 ====================
+
+    /**
+     * 同步法定假日数据
+     */
+    @Operation(summary = "同步法定假日", description = "从 timor.tech API 同步法定假日数据")
+    @PostMapping("/holidays/{year}")
+    public R<HolidaySyncService.SyncResult> syncHolidays(@PathVariable int year) {
+        try {
+            HolidaySyncService.SyncResult result = holidaySyncService.syncHolidayData(year);
+            return R.ok(result);
+        } catch (Exception e) {
+            return R.fail("同步失败: " + e.getMessage());
+        }
+    }
 
     /**
      * 手动触发节日数据同步

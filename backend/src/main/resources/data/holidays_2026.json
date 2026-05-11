@@ -1,0 +1,61 @@
+{
+  "year": 2026,
+  "holidays": [
+    {
+      "name": "元旦",
+      "startDate": "2026-01-01",
+      "endDate": "2026-01-03",
+      "totalDays": 3,
+      "workDays": [],
+      "workDaysDesc": "无调休"
+    },
+    {
+      "name": "春节",
+      "startDate": "2026-02-17",
+      "endDate": "2026-02-23",
+      "totalDays": 7,
+      "workDays": ["2026-02-15", "2026-02-28"],
+      "workDaysDesc": "2月15日（星期日）、2月28日（星期六）上班"
+    },
+    {
+      "name": "清明节",
+      "startDate": "2026-04-04",
+      "endDate": "2026-04-06",
+      "totalDays": 3,
+      "workDays": [],
+      "workDaysDesc": "无调休"
+    },
+    {
+      "name": "劳动节",
+      "startDate": "2026-05-01",
+      "endDate": "2026-05-05",
+      "totalDays": 5,
+      "workDays": ["2026-04-26"],
+      "workDaysDesc": "4月26日（星期日）上班"
+    },
+    {
+      "name": "端午节",
+      "startDate": "2026-06-19",
+      "endDate": "2026-06-21",
+      "totalDays": 3,
+      "workDays": [],
+      "workDaysDesc": "无调休"
+    },
+    {
+      "name": "中秋节",
+      "startDate": "2026-09-25",
+      "endDate": "2026-09-27",
+      "totalDays": 3,
+      "workDays": [],
+      "workDaysDesc": "无调休"
+    },
+    {
+      "name": "国庆节",
+      "startDate": "2026-10-01",
+      "endDate": "2026-10-07",
+      "totalDays": 7,
+      "workDays": ["2026-09-27", "2026-10-10"],
+      "workDaysDesc": "9月27日（星期日）、10月10日（星期六）上班"
+    }
+  ]
+}
