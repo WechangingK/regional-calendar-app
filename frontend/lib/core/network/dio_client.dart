@@ -11,6 +11,7 @@ class DioClient {
 			baseUrl: ApiConstants.baseUrl,
 			connectTimeout: const Duration(milliseconds: ApiConstants.connectTimeout),
 			receiveTimeout: const Duration(milliseconds: ApiConstants.receiveTimeout),
+			sendTimeout: const Duration(milliseconds: ApiConstants.connectTimeout),
 			headers: {
 				'Content-Type': 'application/json',
 				'Accept': 'application/json',
@@ -22,6 +23,7 @@ class DioClient {
 			LogInterceptor(
 				requestBody: true,
 				responseBody: true,
+				logPrint: (obj) => print('[Dio] $obj'),
 			),
 		]);
 	}

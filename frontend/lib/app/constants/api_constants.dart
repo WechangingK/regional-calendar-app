@@ -4,8 +4,8 @@ class ApiConstants {
 	static const String apiPrefix = '$baseUrl$version';
 
 	// 超时时间
-	static const int connectTimeout = 15000;
-	static const int receiveTimeout = 15000;
+	static const int connectTimeout = 30000;
+	static const int receiveTimeout = 30000;
 
 	// 地区
 	static const String region = '$apiPrefix/region';
