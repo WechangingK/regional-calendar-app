@@ -25,13 +25,15 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 	@override
 	void initState() {
 		super.initState();
-		_fetchEvents(_focusedDay.year, _focusedDay.month);
+		WidgetsBinding.instance.addPostFrameCallback((_) {
+			_fetchEvents(_focusedDay.year, _focusedDay.month);
+		});
 	}
 
 	void _fetchEvents(int year, int month) {
-		ref.invalidate(calendarFestivalsProvider);
-		ref.invalidate(calendarActivitiesProvider);
-		ref.invalidate(calendarHolidaysProvider);
+		setState(() {
+			_focusedDay = DateTime(year, month);
+		});
 	}
 
 	void _buildEventMap(

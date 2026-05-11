@@ -27,32 +27,41 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 
 	@Override
 	public List<Activity> getUpcoming(Long regionId, int limit) {
-		return list(new LambdaQueryWrapper<Activity>()
-				.eq(regionId != null, Activity::getRegionId, regionId)
+		LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<Activity>()
 				.ge(Activity::getStartTime, LocalDateTime.now())
 				.in(Activity::getStatus, 1, 2)
 				.orderByAsc(Activity::getStartTime)
-				.last("LIMIT " + limit));
+				.last("LIMIT " + limit);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Activity::getRegionId, regionId).or().isNull(Activity::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<Activity> getHot(int limit, Long regionId) {
-		return list(new LambdaQueryWrapper<Activity>()
+		LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<Activity>()
 				.eq(Activity::getIsHot, 1)
 				.in(Activity::getStatus, 1, 2)
-				.and(regionId != null, w -> w.isNull(Activity::getRegionId).or().eq(Activity::getRegionId, regionId))
 				.orderByDesc(Activity::getViewCount)
-				.last("LIMIT " + limit));
+				.last("LIMIT " + limit);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Activity::getRegionId, regionId).or().isNull(Activity::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<Activity> getRecommended(int limit, Long regionId) {
-		return list(new LambdaQueryWrapper<Activity>()
+		LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<Activity>()
 				.eq(Activity::getIsRecommended, 1)
 				.in(Activity::getStatus, 1, 2)
-				.and(regionId != null, w -> w.isNull(Activity::getRegionId).or().eq(Activity::getRegionId, regionId))
 				.orderByDesc(Activity::getViewCount)
-				.last("LIMIT " + limit));
+				.last("LIMIT " + limit);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Activity::getRegionId, regionId).or().isNull(Activity::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
@@ -67,12 +76,15 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
 	public List<Activity> getByMonth(int year, int month, Long regionId) {
 		LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
 		LocalDateTime end = start.plusMonths(1);
-		return list(new LambdaQueryWrapper<Activity>()
+		LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<Activity>()
 				.in(Activity::getStatus, 1, 2)
-				.and(w -> w.isNull(Activity::getRegionId).or().eq(regionId != null, Activity::getRegionId, regionId))
 				.ge(Activity::getStartTime, start)
 				.lt(Activity::getStartTime, end)
-				.orderByAsc(Activity::getStartTime));
+				.orderByAsc(Activity::getStartTime);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Activity::getRegionId, regionId).or().isNull(Activity::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override

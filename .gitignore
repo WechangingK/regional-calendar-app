@@ -34,5 +34,8 @@ build/
 .env.local
 .env.*.local
 
+# Error logs
+errorLog/
+
 # Claude
 .claude/

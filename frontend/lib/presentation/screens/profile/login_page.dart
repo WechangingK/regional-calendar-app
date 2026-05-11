@@ -328,6 +328,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 					);
 				}
 			}
+		} catch (e) {
+			if (mounted) {
+				ScaffoldMessenger.of(context).showSnackBar(
+					SnackBar(
+						content: Text(_isLogin ? '登录失败：请检查用户名和密码' : '注册失败：$e'),
+						backgroundColor: AppColors.error,
+					),
+				);
+			}
 		} finally {
 			if (mounted) {
 				setState(() => _isLoading = false);

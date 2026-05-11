@@ -23,22 +23,28 @@ public class HolidayScheduleServiceImpl extends ServiceImpl<HolidayScheduleMappe
 
 	@Override
 	public List<HolidaySchedule> getByYearAndRegion(Integer year, Long regionId) {
-		return list(new LambdaQueryWrapper<HolidaySchedule>()
+		LambdaQueryWrapper<HolidaySchedule> wrapper = new LambdaQueryWrapper<HolidaySchedule>()
 				.eq(HolidaySchedule::getYear, year)
 				.eq(HolidaySchedule::getStatus, 1)
-				.and(w -> w.isNull(HolidaySchedule::getRegionId).or().eq(HolidaySchedule::getRegionId, regionId))
-				.orderByAsc(HolidaySchedule::getStartDate));
+				.orderByAsc(HolidaySchedule::getStartDate);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(HolidaySchedule::getRegionId, regionId).or().isNull(HolidaySchedule::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<HolidaySchedule> getByMonth(int year, int month, Long regionId) {
 		LocalDate start = LocalDate.of(year, month, 1);
 		LocalDate end = start.plusMonths(1);
-		return list(new LambdaQueryWrapper<HolidaySchedule>()
+		LambdaQueryWrapper<HolidaySchedule> wrapper = new LambdaQueryWrapper<HolidaySchedule>()
 				.eq(HolidaySchedule::getStatus, 1)
-				.and(w -> w.isNull(HolidaySchedule::getRegionId).or().eq(regionId != null, HolidaySchedule::getRegionId, regionId))
 				.lt(HolidaySchedule::getStartDate, end)
 				.ge(HolidaySchedule::getEndDate, start)
-				.orderByAsc(HolidaySchedule::getStartDate));
+				.orderByAsc(HolidaySchedule::getStartDate);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(HolidaySchedule::getRegionId, regionId).or().isNull(HolidaySchedule::getRegionId));
+		}
+		return list(wrapper);
 	}
 }

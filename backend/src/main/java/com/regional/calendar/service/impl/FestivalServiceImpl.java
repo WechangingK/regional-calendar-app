@@ -30,41 +30,53 @@ public class FestivalServiceImpl extends ServiceImpl<FestivalMapper, Festival> i
 	@Override
 	public List<Festival> getUpcoming(Long regionId, int limit) {
 		String today = LocalDate.now().format(DateTimeFormatter.ofPattern("MM-dd"));
-		return list(new LambdaQueryWrapper<Festival>()
+		LambdaQueryWrapper<Festival> wrapper = new LambdaQueryWrapper<Festival>()
 				.eq(Festival::getStatus, 1)
-				.and(w -> w.isNull(Festival::getRegionId).or().eq(regionId != null, Festival::getRegionId, regionId))
 				.ge(Festival::getStartDate, today)
 				.orderByAsc(Festival::getStartDate)
-				.last("LIMIT " + limit));
+				.last("LIMIT " + limit);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Festival::getRegionId, regionId).or().isNull(Festival::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<Festival> getHot(Integer limit, Long regionId) {
-		return list(new LambdaQueryWrapper<Festival>()
+		LambdaQueryWrapper<Festival> wrapper = new LambdaQueryWrapper<Festival>()
 				.eq(Festival::getStatus, 1)
 				.eq(Festival::getIsHot, 1)
-				.and(regionId != null, w -> w.isNull(Festival::getRegionId).or().eq(Festival::getRegionId, regionId))
 				.orderByDesc(Festival::getViewCount)
-				.last(limit != null ? "LIMIT " + limit : "LIMIT 10"));
+				.last(limit != null ? "LIMIT " + limit : "LIMIT 10");
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Festival::getRegionId, regionId).or().isNull(Festival::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<Festival> getRecommended(Integer limit, Long regionId) {
-		return list(new LambdaQueryWrapper<Festival>()
+		LambdaQueryWrapper<Festival> wrapper = new LambdaQueryWrapper<Festival>()
 				.eq(Festival::getStatus, 1)
 				.eq(Festival::getIsRecommended, 1)
-				.and(regionId != null, w -> w.isNull(Festival::getRegionId).or().eq(Festival::getRegionId, regionId))
 				.orderByDesc(Festival::getViewCount)
-				.last(limit != null ? "LIMIT " + limit : "LIMIT 10"));
+				.last(limit != null ? "LIMIT " + limit : "LIMIT 10");
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Festival::getRegionId, regionId).or().isNull(Festival::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
 	public List<Festival> getByRegion(Long regionId, Integer type) {
-		return list(new LambdaQueryWrapper<Festival>()
+		LambdaQueryWrapper<Festival> wrapper = new LambdaQueryWrapper<Festival>()
 				.eq(Festival::getStatus, 1)
-				.and(w -> w.isNull(Festival::getRegionId).or().eq(Festival::getRegionId, regionId))
 				.eq(type != null, Festival::getType, type)
-				.orderByAsc(Festival::getStartDate));
+				.orderByAsc(Festival::getStartDate);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Festival::getRegionId, regionId).or().isNull(Festival::getRegionId));
+		}
+		return list(wrapper);
 	}
 
 	@Override
@@ -82,13 +94,16 @@ public class FestivalServiceImpl extends ServiceImpl<FestivalMapper, Festival> i
 	@Override
 	public List<Festival> getByMonth(int year, int month, Long regionId) {
 		String monthPrefix = String.format("%02d-", month);
-		return list(new LambdaQueryWrapper<Festival>()
+		LambdaQueryWrapper<Festival> wrapper = new LambdaQueryWrapper<Festival>()
 				.eq(Festival::getStatus, 1)
-				.and(w -> w.isNull(Festival::getRegionId).or().eq(regionId != null, Festival::getRegionId, regionId))
-				.and(w -> w.likeRight(Festival::getStartDate, monthPrefix)
-						.or()
-						.likeRight(Festival::getEndDate, monthPrefix))
-				.orderByAsc(Festival::getStartDate));
+				.orderByAsc(Festival::getStartDate);
+		if (regionId != null) {
+			wrapper.and(w -> w.eq(Festival::getRegionId, regionId).or().isNull(Festival::getRegionId));
+		}
+		wrapper.and(w -> w.likeRight(Festival::getStartDate, monthPrefix)
+				.or()
+				.likeRight(Festival::getEndDate, monthPrefix));
+		return list(wrapper);
 	}
 
 	@Override

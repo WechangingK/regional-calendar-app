@@ -1,6 +1,7 @@
 package com.regional.calendar.controller;
 
 import com.regional.calendar.common.result.R;
+import com.regional.calendar.dto.LoginRequest;
 import com.regional.calendar.dto.RegisterRequest;
 import com.regional.calendar.entity.User;
 import com.regional.calendar.service.UserService;
@@ -36,10 +37,9 @@ public class UserController {
 	@PostMapping("/login")
 	public R<Map<String, Object>> login(
 			HttpServletRequest request,
-			@Parameter(description = "用户名") @RequestParam String username,
-			@Parameter(description = "密码") @RequestParam String password) {
+			@RequestBody LoginRequest req) {
 		String ip = request.getRemoteAddr();
-		Map<String, Object> result = userService.login(username, password, ip);
+		Map<String, Object> result = userService.login(req.getUsername(), req.getPassword(), ip);
 		return R.ok(result);
 	}
 
