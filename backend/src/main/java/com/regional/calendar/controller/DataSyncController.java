@@ -1,6 +1,8 @@
 package com.regional.calendar.controller;
 
 import com.regional.calendar.common.result.R;
+import com.regional.calendar.service.region.RegionImportService;
+import com.regional.calendar.service.region.RegionImportService.ImportResult;
 import com.regional.calendar.service.wikidata.FestivalSyncService;
 import com.regional.calendar.service.wikidata.WikidataService;
 import com.regional.calendar.service.wikidata.WikidataService.WikidataFestival;
@@ -15,7 +17,7 @@ import java.util.List;
  * 数据同步控制器
  * 用于手动触发数据同步和查看同步状态
  */
-@Tag(name = "数据同步", description = "Wikidata 数据同步接口")
+@Tag(name = "数据同步", description = "数据同步接口")
 @RestController
 @RequestMapping("/v1/sync")
 @RequiredArgsConstructor
@@ -23,6 +25,67 @@ public class DataSyncController {
 
     private final FestivalSyncService festivalSyncService;
     private final WikidataService wikidataService;
+    private final RegionImportService regionImportService;
+
+    // ==================== 地区数据导入 ====================
+
+    /**
+     * 一键导入所有地区数据
+     */
+    @Operation(summary = "导入所有地区", description = "一键导入全球国家+中国省市区数据")
+    @PostMapping("/regions/all")
+    public R<List<ImportResult>> importAllRegions() {
+        try {
+            List<ImportResult> results = regionImportService.importAll();
+            return R.ok(results);
+        } catch (Exception e) {
+            return R.fail("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入全球国家数据
+     */
+    @Operation(summary = "导入全球国家", description = "从 REST Countries API 导入全球国家数据")
+    @PostMapping("/regions/countries")
+    public R<ImportResult> importCountries() {
+        try {
+            ImportResult result = regionImportService.importCountries();
+            return R.ok(result);
+        } catch (Exception e) {
+            return R.fail("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入中国省份数据
+     */
+    @Operation(summary = "导入中国省份", description = "从开源数据集导入中国省份数据")
+    @PostMapping("/regions/china/provinces")
+    public R<ImportResult> importChinaProvinces() {
+        try {
+            ImportResult result = regionImportService.importChinaProvinces();
+            return R.ok(result);
+        } catch (Exception e) {
+            return R.fail("导入失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 导入中国市级数据
+     */
+    @Operation(summary = "导入中国城市", description = "从开源数据集导入中国市级数据")
+    @PostMapping("/regions/china/cities")
+    public R<ImportResult> importChinaCities() {
+        try {
+            ImportResult result = regionImportService.importChinaCities();
+            return R.ok(result);
+        } catch (Exception e) {
+            return R.fail("导入失败: " + e.getMessage());
+        }
+    }
+
+    // ==================== 节日数据同步 ====================
 
     /**
      * 手动触发节日数据同步
