@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 
 export '../calendar/calendar_page.dart';
 export '../festival/festival_list_page.dart';
+export '../activity/activity_list_page.dart';
+export '../content/content_list_page.dart';
 export '../profile/profile_page.dart';
 export 'home_page.dart';
 
