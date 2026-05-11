@@ -16,6 +16,7 @@ class ProfilePage extends ConsumerWidget {
 		return Scaffold(
 			appBar: AppBar(
 				title: const Text('我的'),
+				centerTitle: true,
 			),
 			body: ListView(
 				children: [
@@ -49,7 +50,7 @@ class ProfilePage extends ConsumerWidget {
 							radius: 35,
 							backgroundColor: Colors.white,
 							child: Text(
-								user.displayName[0],
+								user.displayName[0].toUpperCase(),
 								style: const TextStyle(
 									fontSize: 28,
 									color: AppColors.primary,
@@ -70,15 +71,26 @@ class ProfilePage extends ConsumerWidget {
 											color: Colors.white,
 										),
 									),
-									if (user.phone != null)
+									if (user.phone != null) ...[
+										const SizedBox(height: 4),
 										Text(
 											user.phone!,
 											style: const TextStyle(
 												color: Colors.white70,
 											),
 										),
+									],
 								],
 							),
+						),
+						IconButton(
+							icon: const Icon(Icons.edit, color: Colors.white),
+							onPressed: () {
+								// TODO: 编辑个人信息
+								ScaffoldMessenger.of(context).showSnackBar(
+									const SnackBar(content: Text('编辑功能开发中...')),
+								);
+							},
 						),
 					],
 				)
@@ -95,6 +107,9 @@ class ProfilePage extends ConsumerWidget {
 							style: ElevatedButton.styleFrom(
 								backgroundColor: Colors.white,
 								foregroundColor: AppColors.primary,
+								shape: RoundedRectangleBorder(
+									borderRadius: BorderRadius.circular(20),
+								),
 							),
 							child: const Text('登录/注册'),
 						),
@@ -119,11 +134,36 @@ class ProfilePage extends ConsumerWidget {
 	Widget _buildMenuSection(BuildContext context, WidgetRef ref, dynamic user) {
 		return Column(
 			children: [
-				_buildMenuItem(Icons.favorite, '我的收藏', () {}),
-				_buildMenuItem(Icons.calendar_month, '我的日程', () {}),
-				_buildMenuItem(Icons.history, '浏览历史', () {}),
-				_buildMenuItem(Icons.settings, '设置', () {}),
-				_buildMenuItem(Icons.info_outline, '关于我们', () {}),
+				_buildMenuItem(
+					Icons.favorite,
+					'我的收藏',
+					() => _showFeatureDialog(context, '收藏'),
+				),
+				_buildMenuItem(
+					Icons.calendar_month,
+					'我的日程',
+					() => _showFeatureDialog(context, '日程'),
+				),
+				_buildMenuItem(
+					Icons.history,
+					'浏览历史',
+					() => _showFeatureDialog(context, '浏览历史'),
+				),
+				_buildMenuItem(
+					Icons.notifications_outlined,
+					'消息通知',
+					() => _showFeatureDialog(context, '消息通知'),
+				),
+				_buildMenuItem(
+					Icons.settings,
+					'设置',
+					() => _showFeatureDialog(context, '设置'),
+				),
+				_buildMenuItem(
+					Icons.info_outline,
+					'关于我们',
+					() => _showAboutDialog(context),
+				),
 				if (user != null)
 					_buildMenuItem(
 						Icons.logout,
@@ -150,6 +190,48 @@ class ProfilePage extends ConsumerWidget {
 		);
 	}
 
+	void _showFeatureDialog(BuildContext context, String feature) {
+		showDialog(
+			context: context,
+			builder: (context) => AlertDialog(
+				title: Text(feature),
+				content: Text('$feature功能开发中，敬请期待！'),
+				actions: [
+					TextButton(
+						onPressed: () => Navigator.pop(context),
+						child: const Text('确定'),
+					),
+				],
+			),
+		);
+	}
+
+	void _showAboutDialog(BuildContext context) {
+		showDialog(
+			context: context,
+			builder: (context) => AlertDialog(
+				title: const Text('关于节日历'),
+				content: const Column(
+					mainAxisSize: MainAxisSize.min,
+					crossAxisAlignment: CrossAxisAlignment.start,
+					children: [
+						Text('版本：1.0.0'),
+						SizedBox(height: 8),
+						Text('一款专注于展示中国各地区特色节日、文化活动和放假安排的日历应用。'),
+						SizedBox(height: 8),
+						Text('© 2026 节日历团队'),
+					],
+				),
+				actions: [
+					TextButton(
+						onPressed: () => Navigator.pop(context),
+						child: const Text('确定'),
+					),
+				],
+			),
+		);
+	}
+
 	void _showLogoutDialog(BuildContext context, WidgetRef ref) {
 		showDialog(
 			context: context,
@@ -165,8 +247,11 @@ class ProfilePage extends ConsumerWidget {
 						onPressed: () {
 							ref.read(currentUserProvider.notifier).logout();
 							Navigator.pop(context);
+							ScaffoldMessenger.of(context).showSnackBar(
+								const SnackBar(content: Text('已退出登录')),
+							);
 						},
-						child: const Text('确定'),
+						child: const Text('确定', style: TextStyle(color: AppColors.error)),
 					),
 				],
 			),

@@ -1,11 +1,10 @@
 import '../../core/network/dio_client.dart';
-import '../../core/network/api_response.dart';
 import '../models/festival.dart';
 
 class FestivalRepository {
 	final _dio = DioClient.instance.dio;
 
-	// 获取节日列表
+	// 获取节日列表（分页）
 	Future<List<Festival>> getFestivals({
 		int? regionId,
 		int? type,
@@ -21,12 +20,7 @@ class FestivalRepository {
 				'pageSize': size,
 			},
 		);
-		// 分页接口返回的是 IPage，需要从 records 字段获取列表
-		final data = response.data['data'];
-		if (data != null && data['records'] != null) {
-			return (data['records'] as List).map((e) => Festival.fromJson(e)).toList();
-		}
-		return [];
+		return _parsePageList(response.data);
 	}
 
 	// 获取即将到来的节日
@@ -38,11 +32,7 @@ class FestivalRepository {
 				'limit': size,
 			},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Festival.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取热门节日
@@ -51,11 +41,7 @@ class FestivalRepository {
 			'/v1/festival/hot',
 			queryParameters: {'limit': size},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Festival.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取推荐节日
@@ -64,21 +50,17 @@ class FestivalRepository {
 			'/v1/festival/recommended',
 			queryParameters: {'limit': size},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Festival.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取节日详情
 	Future<Festival?> getFestivalDetail(int id) async {
 		final response = await _dio.get('/v1/festival/$id');
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => Festival.fromJson(json as Map<String, dynamic>),
-		);
-		return apiResponse.data;
+		final data = response.data;
+		if (data['code'] == 200 && data['data'] != null) {
+			return Festival.fromJson(data['data']);
+		}
+		return null;
 	}
 
 	// 搜索节日
@@ -87,10 +69,30 @@ class FestivalRepository {
 			'/v1/festival/search',
 			queryParameters: {'keyword': keyword},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Festival.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
+	}
+
+	// 解析分页列表数据（IPage格式）
+	List<Festival> _parsePageList(dynamic data) {
+		if (data['code'] == 200 && data['data'] != null) {
+			final pageData = data['data'];
+			if (pageData['records'] != null) {
+				return (pageData['records'] as List)
+					.map((e) => Festival.fromJson(e))
+					.toList();
+			}
+		}
+		return [];
+	}
+
+	// 解析直接列表数据
+	List<Festival> _parseDataList(dynamic data) {
+		if (data['code'] == 200 && data['data'] != null) {
+			final list = data['data'];
+			if (list is List) {
+				return list.map((e) => Festival.fromJson(e)).toList();
+			}
+		}
+		return [];
 	}
 }

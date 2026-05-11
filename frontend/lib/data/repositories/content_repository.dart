@@ -1,11 +1,10 @@
 import '../../core/network/dio_client.dart';
-import '../../core/network/api_response.dart';
 import '../models/content.dart';
 
 class ContentRepository {
 	final _dio = DioClient.instance.dio;
 
-	// 获取内容列表
+	// 获取内容列表（分页）
 	Future<List<Content>> getContents({
 		int? regionId,
 		int? type,
@@ -21,30 +20,39 @@ class ContentRepository {
 				'pageSize': size,
 			},
 		);
-		final data = response.data['data'];
-		if (data != null && data['records'] != null) {
-			return (data['records'] as List).map((e) => Content.fromJson(e)).toList();
-		}
-		return [];
+		return _parsePageList(response.data);
 	}
 
 	// 获取每日推荐内容
 	Future<Content?> getDailyContent() async {
 		final response = await _dio.get('/v1/content/daily');
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => json != null ? Content.fromJson(json as Map<String, dynamic>) : null,
-		);
-		return apiResponse.data;
+		final data = response.data;
+		if (data['code'] == 200 && data['data'] != null) {
+			return Content.fromJson(data['data']);
+		}
+		return null;
 	}
 
 	// 获取内容详情
 	Future<Content?> getContentDetail(int id) async {
 		final response = await _dio.get('/v1/content/$id');
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => Content.fromJson(json as Map<String, dynamic>),
-		);
-		return apiResponse.data;
+		final data = response.data;
+		if (data['code'] == 200 && data['data'] != null) {
+			return Content.fromJson(data['data']);
+		}
+		return null;
+	}
+
+	// 解析分页列表数据
+	List<Content> _parsePageList(dynamic data) {
+		if (data['code'] == 200 && data['data'] != null) {
+			final pageData = data['data'];
+			if (pageData['records'] != null) {
+				return (pageData['records'] as List)
+					.map((e) => Content.fromJson(e))
+					.toList();
+			}
+		}
+		return [];
 	}
 }

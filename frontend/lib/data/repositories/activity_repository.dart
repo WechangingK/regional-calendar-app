@@ -1,11 +1,10 @@
 import '../../core/network/dio_client.dart';
-import '../../core/network/api_response.dart';
 import '../models/activity.dart';
 
 class ActivityRepository {
 	final _dio = DioClient.instance.dio;
 
-	// 获取活动列表
+	// 获取活动列表（分页）
 	Future<List<Activity>> getActivities({
 		int? regionId,
 		int? type,
@@ -21,11 +20,7 @@ class ActivityRepository {
 				'pageSize': size,
 			},
 		);
-		final data = response.data['data'];
-		if (data != null && data['records'] != null) {
-			return (data['records'] as List).map((e) => Activity.fromJson(e)).toList();
-		}
-		return [];
+		return _parsePageList(response.data);
 	}
 
 	// 获取即将到来的活动
@@ -37,11 +32,7 @@ class ActivityRepository {
 				'limit': size,
 			},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取热门活动
@@ -50,11 +41,7 @@ class ActivityRepository {
 			'/v1/activity/hot',
 			queryParameters: {'limit': size},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取推荐活动
@@ -63,30 +50,46 @@ class ActivityRepository {
 			'/v1/activity/recommended',
 			queryParameters: {'limit': size},
 		);
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
 	}
 
 	// 获取活动详情
 	Future<Activity?> getActivityDetail(int id) async {
 		final response = await _dio.get('/v1/activity/$id');
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => Activity.fromJson(json as Map<String, dynamic>),
-		);
-		return apiResponse.data;
+		final data = response.data;
+		if (data['code'] == 200 && data['data'] != null) {
+			return Activity.fromJson(data['data']);
+		}
+		return null;
 	}
 
 	// 按节日获取活动
 	Future<List<Activity>> getActivitiesByFestival(int festivalId) async {
 		final response = await _dio.get('/v1/activity/festival/$festivalId');
-		final apiResponse = ApiResponse.fromJson(
-			response.data,
-			(json) => (json as List).map((e) => Activity.fromJson(e)).toList(),
-		);
-		return apiResponse.data ?? [];
+		return _parseDataList(response.data);
+	}
+
+	// 解析分页列表数据
+	List<Activity> _parsePageList(dynamic data) {
+		if (data['code'] == 200 && data['data'] != null) {
+			final pageData = data['data'];
+			if (pageData['records'] != null) {
+				return (pageData['records'] as List)
+					.map((e) => Activity.fromJson(e))
+					.toList();
+			}
+		}
+		return [];
+	}
+
+	// 解析直接列表数据
+	List<Activity> _parseDataList(dynamic data) {
+		if (data['code'] == 200 && data['data'] != null) {
+			final list = data['data'];
+			if (list is List) {
+				return list.map((e) => Activity.fromJson(e)).toList();
+			}
+		}
+		return [];
 	}
 }
