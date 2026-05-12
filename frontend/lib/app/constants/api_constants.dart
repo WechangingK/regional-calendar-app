@@ -1,49 +1,42 @@
-class ApiConstants {
-	static const String baseUrl = 'http://localhost:8080/api';
-	static const String version = '/v1';
-	static const String apiPrefix = '$baseUrl$version';
+import 'package:flutter/foundation.dart';
 
-	// 超时时间
+class ApiConstants {
+	// API主机: Web用localhost, Android模拟器用10.0.2.2, 真机改此处为电脑IP
+	static const String _webHost = 'localhost';
+	static const String _androidHost = '10.0.2.2';
+
+	static String get host {
+		if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+			return _androidHost;
+		}
+		return _webHost;
+	}
+
+	static String get baseUrl => 'http://$host:8080/api';
+	static const String version = '/v1';
+	static String get apiPrefix => '$baseUrl$version';
+
 	static const int connectTimeout = 30000;
 	static const int receiveTimeout = 30000;
 
-	// 地区
-	static const String region = '$apiPrefix/region';
-	static const String regionChildren = '$apiPrefix/region/children';
-	static const String regionSearch = '$apiPrefix/region/search';
-
-	// 民族
-	static const String ethnicity = '$apiPrefix/ethnicity';
-
-	// 节日
-	static const String festival = '$apiPrefix/festival';
-	static const String festivalUpcoming = '$apiPrefix/festival/upcoming';
-	static const String festivalHot = '$apiPrefix/festival/hot';
-	static const String festivalRecommend = '$apiPrefix/festival/recommend';
-
-	// 活动
-	static const String activity = '$apiPrefix/activity';
-	static const String activityUpcoming = '$apiPrefix/activity/upcoming';
-
-	// 放假安排
-	static const String holiday = '$apiPrefix/holiday';
-
-	// 用户
-	static const String userRegister = '$apiPrefix/user/register';
-	static const String userLogin = '$apiPrefix/user/login';
-	static const String userProfile = '$apiPrefix/user/profile';
-
-	// 收藏
-	static const String favorite = '$apiPrefix/favorite';
-	static const String favoriteToggle = '$apiPrefix/favorite/toggle';
-
-	// 日程
-	static const String schedule = '$apiPrefix/schedule';
-
-	// 内容
-	static const String content = '$apiPrefix/content';
-	static const String contentDaily = '$apiPrefix/content/daily';
-
-	// 配置
-	static const String config = '$apiPrefix/config';
+	static String get region => '$apiPrefix/region';
+	static String get regionChildren => '$apiPrefix/region/children';
+	static String get regionSearch => '$apiPrefix/region/search';
+	static String get ethnicity => '$apiPrefix/ethnicity';
+	static String get festival => '$apiPrefix/festival';
+	static String get festivalUpcoming => '$apiPrefix/festival/upcoming';
+	static String get festivalHot => '$apiPrefix/festival/hot';
+	static String get festivalRecommend => '$apiPrefix/festival/recommended';
+	static String get activity => '$apiPrefix/activity';
+	static String get activityUpcoming => '$apiPrefix/activity/upcoming';
+	static String get holiday => '$apiPrefix/holiday';
+	static String get userRegister => '$apiPrefix/user/register';
+	static String get userLogin => '$apiPrefix/user/login';
+	static String get userProfile => '$apiPrefix/user/profile';
+	static String get favorite => '$apiPrefix/favorite';
+	static String get favoriteToggle => '$apiPrefix/favorite/toggle';
+	static String get schedule => '$apiPrefix/schedule';
+	static String get content => '$apiPrefix/content';
+	static String get contentDaily => '$apiPrefix/content/daily';
+	static String get config => '$apiPrefix/config';
 }

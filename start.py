@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''地区特色日历App — 一键启动前后端'''
+'''地区特色日历App — 一键启动前后端
 
-import subprocess, time, socket, os
+用法:
+  python start.py          默认 Chrome Web 模式
+  python start.py --android  Android 模拟器模式（需先启动模拟器）
+'''
+
+import subprocess, time, socket, os, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 BE = os.path.join(BASE, 'backend')
 FE = os.path.join(BASE, 'frontend')
 
 BE_PORT = 8080
-FE_PORT = 55872
+FE_WEB_PORT = 55872
 
 SWAGGER = f'http://localhost:{BE_PORT}/api/swagger-ui.html'
-FLUTTER_URL = f'http://localhost:{FE_PORT}'
 
 def check_port(host, port):
 	try:
@@ -25,7 +29,6 @@ def check_port(host, port):
 		return False
 
 def find_pid_by_port(port):
-	'''查找占用指定端口的进程 PID'''
 	try:
 		out = subprocess.check_output(
 			f'netstat -ano | findstr ":{port}" | findstr "LISTENING"',
@@ -40,7 +43,6 @@ def find_pid_by_port(port):
 	return None
 
 def kill_port(port):
-	'''释放指定端口'''
 	pid = find_pid_by_port(port)
 	if pid:
 		try:
@@ -59,11 +61,15 @@ def start_in_window(title, cwd, cmd):
 	print(f'  [启动] {title} - 新窗口已打开')
 
 def main():
+	is_android = '--android' in sys.argv
+
 	print('=' * 50)
 	print('  地区特色日历App — 一键启动')
+	print(f'  模式: {"Android 模拟器" if is_android else "Chrome Web"}')
 	print('=' * 50)
 	print()
 
+	# 1. 检测依赖
 	print('[1/4] 检测依赖服务...')
 	for name, host, port in [('MySQL', 'localhost', 3306), ('Redis', 'localhost', 6379)]:
 		if check_port(host, port):
@@ -72,29 +78,42 @@ def main():
 			print(f'  [!!] {name} ({host}:{port}) 未就绪，请先启动！')
 	print()
 
+	# 2. 清理旧进程
 	print('[2/4] 清理旧进程...')
 	kill_port(BE_PORT)
-	kill_port(FE_PORT)
+	if not is_android:
+		kill_port(FE_WEB_PORT)
 	print()
 
-	print('[3/4] 编译并启动后端 (Spring Boot)...')
+	# 3. 启动后端
+	print('[3/4] 编译并启动后端 (Spring Boot :8080)...')
 	start_in_window('Backend-API', BE, 'mvn clean compile spring-boot:run')
+	if is_android:
+		print('  后端已绑定 0.0.0.0:8080，Android 模拟器将通过 10.0.2.2 访问')
 	print('  等待后端初始化 (约25秒)...')
 	time.sleep(25)
 	print()
 
-	print('[4/4] 启动前端 (Flutter Web)...')
-	start_in_window('Frontend-Flutter', FE,
-		f'flutter run -d chrome --web-port={FE_PORT}')
+	# 4. 启动前端
+	if is_android:
+		print('[4/4] 启动前端 (Flutter Android)...')
+		start_in_window('Frontend-Android', FE, 'flutter run')
+	else:
+		print('[4/4] 启动前端 (Flutter Web)...')
+		start_in_window('Frontend-Flutter', FE,
+			f'flutter run -d chrome --web-port={FE_WEB_PORT}')
 	print()
 
 	print('=' * 50)
 	print('  启动完成！')
 	print()
 	print(f'  后端 Swagger: {SWAGGER}')
-	print(f'  前端页面:     {FLUTTER_URL}')
+	if is_android:
+		print(f'  前端 API:     http://10.0.2.2:{BE_PORT}/api (模拟器内)')
+		print('  Flutter 会自动选择已启动的 Android 模拟器')
+	else:
+		print(f'  前端页面:     http://localhost:{FE_WEB_PORT}')
 	print()
-	print('  后端和前端各自在独立窗口运行')
 	print('  关闭对应窗口即可停止服务')
 	print('=' * 50)
 
