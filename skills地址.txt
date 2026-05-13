@@ -1,0 +1,5 @@
+npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+npx skills add https://github.com/tanweai/pua --skill pua
+npx skills add https://github.com/obra/superpowers --skill using-superpowers
+npx skills add https://github.com/obra/superpowers --skill brainstorming

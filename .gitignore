@@ -36,3 +36,15 @@ build/
 
 # Claude
 .claude/
+
+# Nested git repos
+regional-calendar-app/
+smart-scheduler/
+
+# Secrets / API keys
+start-cc-connect.bat
+
+# Temp/Log files
+错误日志.txt
+错误日志/
+*.log
